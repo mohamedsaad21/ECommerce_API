@@ -1,234 +1,42 @@
-# E-Commerce API
-
-# A RESTful E-Commerce API built with .NET 8, using Clean Architecture.
-
-# 
-
-# Features
-
-# Clean Architecture structure (Presentation, Application, Domain, Infrastructure)
-
-# 
-
-# Repository and Unit of Work patterns
-
-# 
-
-# DTOs for input/output separation
-
-# 
-
-# JWT Authentication and role-based Authorization
-
-# 
-
-# AutoMapper integration
-
-# 
-
-# Validation using Action Filters
-
-# 
-
-# Pagination for API responses
-
-# 
-
-# Fluent API for entity configuration (EF Core)
-
-# 
-
-# Tech Stack
-
-# ASP.NET Core Web API
-
-# 
-
-# Entity Framework Core
-
-# 
-
-# SQL Server
-
-# 
-
-# AutoMapper
-
-# 
-
-# FluentValidation
-
-# 
-
-# JWT Bearer Authentication
-
-# 
-
-# Project Structure
-
-# Domain – Business entities and enums
-
-# 
-
-# Application – DTOs, Interfaces, Services, Use Cases
-
-# 
-
-# Infrastructure – EF Core, DB Context, Repositories
-
-# 
-
-# Presentation – API Controllers, Filters, Middlewares
-
-# 
-
-# Authentication
-
-# Login/Register using JWT tokens
-
-# 
-
-# Tokens include roles and claims
-
-# 
-
-# Protected endpoints using \[Authorize] and role-based access
-
-# 
-
-# Pagination
-
-# Applied on GET endpoints
-
-# 
-
-# Accepts query parameters:
-
-# 
-
-# pageNumber
-
-# 
-
-# pageSize
-
-# 
-
-# Example
-
-# bash
-
-# Copy
-
-# Edit
-
-# GET /api/products?pageNumber=2\&pageSize=10
-
-# Validation
-
-# Centralized validation using Action Filters
-
-# 
-
-# Custom response format for validation errors
-
-# 
-
-# Clean controller logic
-
-# 
-
-# Configuration
-
-# Update appsettings.json with your DB and JWT settings.
-
-# 
-
-# Run migrations:
-
-# 
-
-# bash
-
-# Copy
-
-# Edit
-
-# dotnet ef migrations add Init
-
-# dotnet ef database update
-
-# Run the app:
-
-# 
-
-# bash
-
-# Copy
-
-# Edit
-
-# dotnet run
-
-# Usage
-
-# Register
-
-# http
-
-# Copy
-
-# Edit
-
-# POST /api/auth/register
-
-# Login
-
-# http
-
-# Copy
-
-# Edit
-
-# POST /api/auth/login
-
-# Get Products (Paginated)
-
-# http
-
-# Copy
-
-# Edit
-
-# GET /api/products?pageNumber=1\&pageSize=10
-
-# Protected Route
-
-# http
-
-# Copy
-
-# Edit
-
-# GET /api/orders
-
-# Authorization: Bearer {your\_token}
-
-# Tools
-
-# Swagger UI for API testing
-
-# 
-
-# Global error handling middleware
-
-# 
-
-# Role seeding for admin/user
-
-# 
-
-# Contributing
-
-# Pull requests are welcome. For major changes, open an issue first.
-
+# E-Commerce API (.NET 8)
+
+A clean, modular REST API for managing an e-commerce platform.
+
+## Features
+
+- Clean Architecture
+- Repository Pattern + Unit of Work
+- DTOs for separation of concerns
+- Pagination for large data sets
+- Fluent API configurations (EF Core)
+- JWT Authentication and Authorization
+- Role-based access control
+- AutoMapper for mapping entities and DTOs
+- Validation using Filters
+
+## Tech Stack
+
+- .NET 8 Web API
+- Entity Framework Core
+- SQL Server
+- AutoMapper
+- JWT Bearer Authentication
+- FluentValidation
+
+## Project Structure
+
+- `Domain` – Entities and core logic
+- `Application` – DTOs, services, contracts
+- `Infrastructure` – Data access layer
+- `Presentation` – Controllers, filters, authentication
+- `Shared` – Common helpers, response formats
+
+## Setup
+
+1. Clone the repo  
+2. Update `appsettings.json` with your DB and JWT settings  
+3. Apply migrations
+
+```bash
+dotnet ef migrations add Init
+dotnet ef database update
