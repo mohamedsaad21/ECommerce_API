@@ -31,13 +31,13 @@ namespace ECommerce_API.Presentation.Controllers
         [ResponseCache(CacheProfileName = "Default30")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<APIResponse>> GetCartItems()
+        public async Task<ActionResult<APIResponse>> GetCartItems(int pageSize = 3, int pageNumber = 1)
         {
             try
             {
                 var UserId = User.FindFirst("uid")?.Value;
                 _response.Result = _mapper.Map<IEnumerable<ShoppingCartDTO>>
-                    (await _unitOfWork.ShoppingCart.GetAllAsync(u => u.ApplicationUserId == UserId));
+                    (await _unitOfWork.ShoppingCart.GetAllAsync(u => u.ApplicationUserId == UserId, pageSize:pageSize, pageNumber:pageNumber));
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }

@@ -28,11 +28,11 @@ namespace ECommerce_API.Presentation.Controllers
         [HttpGet]
         [ResponseCache(CacheProfileName = "Default30")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<APIResponse>> GetCategories()
+        public async Task<ActionResult<APIResponse>> GetCategories(int pageSize = 3, int pageNumber = 1)
         {
             try
             {
-                _response.Result = _mapper.Map<IEnumerable<CategoryDTO>>(await _unitOfWork.Category.GetAllAsync());
+                _response.Result = _mapper.Map<IEnumerable<CategoryDTO>>(await _unitOfWork.Category.GetAllAsync(pageSize:pageSize, pageNumber:pageNumber));
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
 

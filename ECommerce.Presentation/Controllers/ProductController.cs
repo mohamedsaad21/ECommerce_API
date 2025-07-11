@@ -29,11 +29,11 @@ namespace ECommerce_API.Presentation.Controllers
         [HttpGet]
         [ResponseCache(CacheProfileName = "Default30")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<APIResponse>> GetProducts()
+        public async Task<ActionResult<APIResponse>> GetProducts(int pageSize = 3, int pageNumber = 1)
         {
             try
             {
-                _response.Result = _mapper.Map<IEnumerable<ProductDTO>>(await _unitOfWork.Product.GetAllAsync());
+                _response.Result = _mapper.Map<IEnumerable<ProductDTO>>(await _unitOfWork.Product.GetAllAsync(includeProperties: "Category", pageSize:pageSize, pageNumber:pageNumber));
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
 

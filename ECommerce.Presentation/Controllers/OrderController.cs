@@ -32,12 +32,12 @@ namespace ECommerce_API.Presentation.Controllers
         [ResponseCache(CacheProfileName = "Default30")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<APIResponse>> GetOrders()
+        public async Task<ActionResult<APIResponse>> GetOrders(int pageSize = 3, int pageNumber = 1)
         {
             try
             {
                 var userId = User.FindFirst("uid")?.Value;
-                _response.Result = _mapper.Map<IEnumerable<OrderDTO>>(await _unitOfWork.Order.GetAllAsync(u => u.ApplicationUserId == userId));
+                _response.Result = _mapper.Map<IEnumerable<OrderDTO>>(await _unitOfWork.Order.GetAllAsync(u => u.ApplicationUserId == userId, pageSize:pageSize, pageNumber:pageNumber));
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             } catch (Exception ex)
