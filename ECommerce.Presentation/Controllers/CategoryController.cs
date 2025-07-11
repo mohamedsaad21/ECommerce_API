@@ -78,7 +78,7 @@ namespace ECommerce_API.Presentation.Controllers
             return _response;
         }
         [HttpPost]
-        [Authorize]
+        [Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -109,7 +109,7 @@ namespace ECommerce_API.Presentation.Controllers
             return _response;
         }
         [HttpDelete("{id:int}", Name = "DeleteCategory")]
-        [Authorize]
+        [Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -143,7 +143,7 @@ namespace ECommerce_API.Presentation.Controllers
             return _response;
         }
         [HttpPut("{id:int}", Name = "UpdateCategory")]
-        [Authorize]
+        [Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

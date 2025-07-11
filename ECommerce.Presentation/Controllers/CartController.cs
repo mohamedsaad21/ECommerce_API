@@ -12,7 +12,7 @@ namespace ECommerce_API.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = SD.Role_Customer)]
     public class CartController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

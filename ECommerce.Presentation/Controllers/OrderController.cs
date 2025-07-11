@@ -12,7 +12,7 @@ namespace ECommerce_API.Presentation.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = SD.Role_Customer)]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
