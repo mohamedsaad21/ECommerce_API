@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using ECommerce.Application.Common;
 using ECommerce.Application.Dtos.Category;
 using ECommerce.Domain.Entities;
@@ -9,7 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 namespace ECommerce_API.Presentation.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1")]
     [ApiController]
     public class CategoryController : ControllerBase
     {
@@ -149,7 +151,7 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<APIResponse>> UpdateCategory(int id, [FromBody] CartUpdate categoryDTO)
+        public async Task<ActionResult<APIResponse>> UpdateCategory(int id, [FromBody] CartUpdateDTO categoryDTO)
         {
             try
             {

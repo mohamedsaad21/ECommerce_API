@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using ECommerce.Application.Common;
 using ECommerce.Application.Dtos.Order;
 using ECommerce.Application.IServices;
@@ -10,9 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 namespace ECommerce_API.Presentation.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
-    [Authorize(Roles = SD.Role_Customer)]
+    [Authorize(Roles = $"{SD.Role_Admin},{SD.Role_Company},{SD.Role_Customer}")]
+    [ApiVersion("1")]
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
@@ -91,7 +93,7 @@ namespace ECommerce_API.Presentation.Controllers
             try
             {
                 var UserId = User.FindFirst("uid")?.Value;
-                var order = await _orderService.CreateOrder(UserId);
+                var order = await _orderService.CreateOrder(UserId!)!;
                 if(order == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -106,84 +108,6 @@ namespace ECommerce_API.Presentation.Controllers
                 };
                 return Ok(_response);
             } catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
-            }
-            return _response;
-        }
-        [HttpDelete("{id:int}", Name = "DeleteOrder")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<APIResponse>> DeleteOrder(int id)
-        {
-            try
-            {
-                if(id == 0)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                var order = await _unitOfWork.Order.GetAsync(u => u.Id == id, false);
-                if(order == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-                await _unitOfWork.Order.RemoveAsync(order);
-                await _unitOfWork.SaveAsync();
-
-                _response.StatusCode = HttpStatusCode.OK;
-                return Ok(_response);
-
-            }catch(Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
-            }
-            return _response;
-        }
-        [HttpPut("{id:int}", Name = "UpdateOrder")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<APIResponse>> UpdateOrder(int id, [FromBody] OrderUpdateDTO orderDTO)
-        {
-            try
-            {
-                if(id == 0 || id != orderDTO.Id || orderDTO == null)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-
-                var order = await _unitOfWork.Order.GetAsync(u => u.Id == id, false);
-                if(order == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-                order = _mapper.Map<Order>(orderDTO);
-
-                
-                order.ApplicationUserId = User.FindFirst("uid")?.Value!;
-                var products = await _unitOfWork.Product.GetAllAsync();
-                order.SubTotal = products.Where(u => orderDTO.ProductId.Contains(u.Id)).Sum(p => p.Price);
-
-                await _unitOfWork.Order.UpdateAsync(order);
-                await _unitOfWork.SaveAsync();
-
-                _response.StatusCode = HttpStatusCode.OK;
-                return Ok(_response);
-
-            }catch(Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };

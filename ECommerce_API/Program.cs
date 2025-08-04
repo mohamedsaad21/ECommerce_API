@@ -17,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using System.Text;
+using ApiVersion = Asp.Versioning.ApiVersion;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,17 +64,19 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidIssuer = builder.Configuration["JWT:Issuer"],
         ValidAudience = builder.Configuration["JWT:Audience"],
+        ClockSkew = TimeSpan.Zero,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!))
     };
 });
 builder.Services.AddCors();
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
-        Title = "ECommerce",
-        Description = "My second api",
+        Title = "Stack Store",
+        Description = "Stack Store is a RESTful e-commerce API that manages products, categories, orders, carts, and user authentication.",
         TermsOfService = new Uri("https://www.linkedin.com/in/mohamedsaad14/"),
         Contact = new OpenApiContact
         {
@@ -87,6 +90,7 @@ builder.Services.AddSwaggerGen(options =>
             Url = new Uri("https://www.linkedin.com/in/mohamedsaad14/")
         }
     });
+
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -122,17 +126,40 @@ builder.Services.AddScoped<ProductValidateAttribute>();
 builder.Services.AddScoped<ShoppingCartValidateAttribute>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IFileService, FileService>();
+
+
 builder.Services.AddResponseCaching();
+builder.Services.AddApiVersioning(options =>
+{
+    options.AssumeDefaultVersionWhenUnspecified = true;
+    options.DefaultApiVersion = new ApiVersion(1);
+    options.ReportApiVersions = true;
+}).AddMvc()
+.AddApiExplorer(options =>
+{
+    options.GroupNameFormat = "'v'VVV";
+    options.SubstituteApiVersionInUrl = true;
+    options.DefaultApiVersion = new ApiVersion(1);
+    options.AssumeDefaultVersionWhenUnspecified = true;
+});
+
+builder.Services.AddHttpContextAccessor();
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "StackStore V1");
+        //options.RoutePrefix = string.Empty;
+        options.RoutePrefix = "swagger";
+    });
 }
-
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
@@ -162,8 +189,8 @@ using (var scope = app.Services.CreateScope())
 
     var FirstName = "Mohamed";
     var LastName = "Saad";
-    var Username = "msaad";
-    var Email = "mohamedsaad2756@gmail.com";
+    var Username = "adminuser";
+    var Email = "admin@stackstore.com";
     var password = "Ad@123";
 
     var user = new ApplicationUser

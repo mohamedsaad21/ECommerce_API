@@ -6,5 +6,7 @@ namespace ECommerce.Application.IServices
         Task<AuthModel> RegisterAsync(RegisterModel model);
         Task<AuthModel> GetTokenAsync(TokenRequestModel model);
         Task<string> AssignToRoleAsync(AddRoleModel model);
+        Task<AuthModel> RefreshTokenAsync(string token);
+        Task<bool> RevokeTokenAsync(string token);
     }
 }

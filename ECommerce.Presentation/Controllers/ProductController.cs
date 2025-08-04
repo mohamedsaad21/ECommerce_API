@@ -1,29 +1,37 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using ECommerce.Application.Common;
 using ECommerce.Application.Dtos.Product;
 using ECommerce.Application.Filters;
+using ECommerce.Application.IServices;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.IRepository;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 namespace ECommerce_API.Presentation.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
+    [ApiVersion("1")]
     public class ProductController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         protected APIResponse _response;
+        private readonly IFileService _fileService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
 
-        public ProductController(IUnitOfWork unitOfWork, IMapper mapper)
+        public ProductController(IUnitOfWork unitOfWork, IMapper mapper, IFileService fileService, IWebHostEnvironment webHostEnvironment)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             this._response = new();
+            this._fileService = fileService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [HttpGet]
@@ -33,7 +41,14 @@ namespace ECommerce_API.Presentation.Controllers
         {
             try
             {
-                _response.Result = _mapper.Map<IEnumerable<ProductDTO>>(await _unitOfWork.Product.GetAllAsync(includeProperties: "Category", pageSize:pageSize, pageNumber:pageNumber));
+                 var products = _mapper.Map<IEnumerable<ProductDTO>>(await _unitOfWork.Product.GetAllAsync(includeProperties: "Category", pageSize:pageSize, pageNumber:pageNumber));
+                //products.Where(p => p.Images is null).Select(p => p.Images = _fileService.GetByUrls("Products", p.Id));
+                foreach(var  product in products)
+                {
+                    product.images = _fileService.GetByUrls(product.Id, _webHostEnvironment.WebRootPath,"Products");
+                }
+
+                _response.Result = products;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
 
@@ -68,7 +83,9 @@ namespace ECommerce_API.Presentation.Controllers
                     _response.IsSuccess = false;
                     return BadRequest(_response);
                 }
-                _response.Result = _mapper.Map<ProductDTO>(Product);
+                var product = _mapper.Map<ProductDTO>(Product);
+                product.images = _fileService.GetByUrls(product.Id, _webHostEnvironment.WebRootPath, "Products");
+                _response.Result = product;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
 
@@ -88,13 +105,14 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<APIResponse>> CreateProduct([FromBody] ProductCreateDTO productDTO)
+        public async Task<ActionResult<APIResponse>> CreateProduct([FromForm] ProductCreateDTO productDTO)
         {
             try
             {
                 var Product = _mapper.Map<Product>(productDTO);
                 await _unitOfWork.Product.CreateAsync(Product);
                 await _unitOfWork.SaveAsync();
+                await _fileService.UploadAsync(Product.Id, productDTO.files!, _webHostEnvironment.WebRootPath, "Products");
 
                 _response.Result = CreatedAtRoute("GetProduct", new { Id = Product.Id }, Product);
                 _response.StatusCode = HttpStatusCode.Created;
@@ -133,6 +151,7 @@ namespace ECommerce_API.Presentation.Controllers
                 }
                 await _unitOfWork.Product.RemoveAsync(Product);
                 await _unitOfWork.SaveAsync();
+                _fileService.DeleteAsync(Product.Id, _webHostEnvironment.WebRootPath, "Products");
                 return Ok(_response);
             }
             catch (Exception ex)

@@ -198,6 +198,29 @@ namespace ECommerce.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RefreshToken",
+                columns: table => new
+                {
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExpiresOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    RevokedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshToken", x => new { x.ApplicationUserId, x.Id });
+                    table.ForeignKey(
+                        name: "FK_RefreshToken_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
@@ -207,7 +230,6 @@ namespace ECommerce.Infrastructure.Migrations
                     Description = table.Column<string>(type: "nvarchar(600)", maxLength: 600, nullable: false),
                     Price = table.Column<decimal>(type: "decimal(16,2)", precision: 16, scale: 2, nullable: false),
                     Stock = table.Column<int>(type: "int", nullable: false),
-                    ImagesPath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -286,16 +308,16 @@ namespace ECommerce.Infrastructure.Migrations
 
             migrationBuilder.InsertData(
                 table: "Products",
-                columns: new[] { "Id", "CategoryId", "Description", "ImagesPath", "Name", "Price", "Stock" },
+                columns: new[] { "Id", "CategoryId", "Description", "Name", "Price", "Stock" },
                 values: new object[,]
                 {
-                    { 1, 1, "15-inch display, 8GB RAM", null, "Laptop", 799.99m, 40 },
-                    { 2, 1, "Noise-cancelling wireless", null, "Headphones", 129.99m, 60 },
-                    { 3, 2, "Cotton, size M", null, "T-Shirt", 19.99m, 80 },
-                    { 4, 4, "Ergonomic, adjustable height", null, "Office Chair", 149.99m, 30 },
-                    { 5, 5, "Official size and weight", null, "Basketball", 25.99m, 25 },
-                    { 6, 3, "300 pages, best-seller", null, "Fiction Novel", 12.49m, 85 },
-                    { 7, 2, "Waterproof, hooded", null, "Winter Jacket", 89.99m, 50 }
+                    { 1, 1, "15-inch display, 8GB RAM", "Laptop", 799.99m, 40 },
+                    { 2, 1, "Noise-cancelling wireless", "Headphones", 129.99m, 60 },
+                    { 3, 2, "Cotton, size M", "T-Shirt", 19.99m, 80 },
+                    { 4, 4, "Ergonomic, adjustable height", "Office Chair", 149.99m, 30 },
+                    { 5, 5, "Official size and weight", "Basketball", 25.99m, 25 },
+                    { 6, 3, "300 pages, best-seller", "Fiction Novel", 12.49m, 85 },
+                    { 7, 2, "Waterproof, hooded", "Winter Jacket", 89.99m, 50 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -383,6 +405,9 @@ namespace ECommerce.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "OrderProduct");
+
+            migrationBuilder.DropTable(
+                name: "RefreshToken");
 
             migrationBuilder.DropTable(
                 name: "ShoppingCarts");

@@ -19,8 +19,6 @@ namespace ECommerce.Application.Dtos.Product
         [Required]
         public int stock { get; set; }
 
-        public string? ImagesPath { get; set; }
-
         public int CategoryId { get; set; }
     }
 }

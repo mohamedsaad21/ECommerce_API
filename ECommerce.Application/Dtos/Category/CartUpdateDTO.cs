@@ -2,7 +2,7 @@
 
 namespace ECommerce.Application.Dtos.Category
 {
-    public class CartUpdate
+    public class CartUpdateDTO
     {
         public int Id { get; set; }
         [Required, MaxLength(100)]

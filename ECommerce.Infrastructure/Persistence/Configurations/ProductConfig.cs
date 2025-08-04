@@ -11,7 +11,6 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
             builder.Property(p => p.Description).IsRequired().HasMaxLength(600);
             builder.Property(p => p.Price).IsRequired().HasPrecision(16, 2);
             builder.Property(p => p.Stock).IsRequired();
-            builder.Property(p => p.ImagesPath).IsRequired(false);
 
             builder.HasOne(p => p.Category).WithMany(c => c.Products);
             builder.HasMany(p => p.Orders).WithMany(o => o.Products);

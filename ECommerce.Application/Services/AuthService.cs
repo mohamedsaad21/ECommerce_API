@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ECommerce.Application.Services
@@ -88,7 +89,22 @@ namespace ECommerce.Application.Services
             authModel.ExpiresOn = jwtSecurityToken.ValidTo;
             authModel.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
 
-            return authModel;
+            if (user.RefreshTokens.Any(t => t.IsActive))
+            {
+                var activeRefreshToken = user.RefreshTokens.FirstOrDefault(t => t.IsActive);
+                authModel.RefreshToken = activeRefreshToken.Token;
+                authModel.RefreshTokenExpiration = activeRefreshToken.ExpiresOn;
+            }
+            else
+            {
+                var activeRefreshToken = GenerateRefreshToken();
+                authModel.RefreshToken = activeRefreshToken.Token;
+                authModel.RefreshTokenExpiration = activeRefreshToken.ExpiresOn;
+                user.RefreshTokens.Add(activeRefreshToken);
+                await _userManager.UpdateAsync(user);
+            }
+
+                return authModel;
         }
 
         private async Task<JwtSecurityToken> CreatejwtToken(ApplicationUser user)
@@ -138,6 +154,77 @@ namespace ECommerce.Application.Services
             var result = await _userManager.AddToRoleAsync(user, model.Role);
 
             return result.Succeeded ? string.Empty : "Something went wrong";
+        }
+
+        public async Task<AuthModel> RefreshTokenAsync(string token)
+        {
+            var authModel = new AuthModel();
+
+            var user =  _userManager.Users.SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token));
+            if(user == null)
+            {
+                authModel.Message = "Invalid token!";
+                return authModel;
+            }
+
+            var refreshToken = user.RefreshTokens.Single(t => t.Token == token);
+            if (!refreshToken.IsActive)
+            {
+                authModel.Message = "Inactive token!";
+                return authModel;
+            }
+
+            refreshToken.RevokedOn = DateTime.UtcNow;
+            var newRefreshToken = GenerateRefreshToken();
+            user.RefreshTokens.Add(newRefreshToken);
+            await _userManager.UpdateAsync(user);
+
+            var jwtToken = await CreatejwtToken(user);
+            authModel.IsAuthenticated = true;
+            authModel.Email = user.Email;
+            authModel.Username = user.UserName;
+            var roles = await _userManager.GetRolesAsync(user);
+            authModel.Roles = roles.ToList();
+            authModel.RefreshToken = newRefreshToken.Token;
+            authModel.RefreshTokenExpiration = newRefreshToken.ExpiresOn;
+
+
+            return authModel;
+        }
+
+        public async Task<bool> RevokeTokenAsync(string token)
+        {
+            var authModel = new AuthModel();
+
+            var user = _userManager.Users.SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token));
+            if (user == null)
+                return false;
+
+            var refreshToken = user.RefreshTokens.Single(t => t.Token == token);
+            if (!refreshToken.IsActive)
+                return false;
+
+            refreshToken.RevokedOn = DateTime.UtcNow;
+
+            await _userManager.UpdateAsync(user);
+
+            return true;
+        }
+
+        private RefreshToken GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+
+            using var generator = new RNGCryptoServiceProvider();
+
+            generator.GetBytes(randomNumber);
+
+            return new RefreshToken
+            {
+                Token = Convert.ToBase64String(randomNumber),
+                ExpiresOn = DateTime.UtcNow.AddDays(10),
+                CreatedOn = DateTime.UtcNow,
+            };
         }
     }
 }

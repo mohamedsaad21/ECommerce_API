@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 namespace ECommerce.Application.Dtos.Product
 {
@@ -17,8 +18,7 @@ namespace ECommerce.Application.Dtos.Product
         [Required]
         public int stock { get; set; }
 
-        public string? ImagesPath { get; set; }
-
+        public List<IFormFile>? files { get; set; }
         public int CategoryId { get; set; }
     }
 }

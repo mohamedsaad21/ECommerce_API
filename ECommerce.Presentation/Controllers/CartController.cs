@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using ECommerce.Application.Common;
 using ECommerce.Application.Dtos.ShoppingCart;
 using ECommerce.Domain.Entities;
@@ -10,9 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 namespace ECommerce_API.Presentation.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
-    [Authorize(Roles = SD.Role_Customer)]
+    [Authorize(Roles = $"{SD.Role_Admin},{SD.Role_Company},{SD.Role_Customer}")]
+    [ApiVersion("1")]
     public class CartController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
