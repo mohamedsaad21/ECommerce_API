@@ -40,7 +40,7 @@ namespace ECommerce_API.Filters
             var errors = new List<string>();
             
 
-            if (dto.Count < 0)
+            if (dto.Quantity < 0)
                 errors.Add("Count must be a positive value");
 
             

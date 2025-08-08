@@ -13,8 +13,6 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
             builder.Property(p => p.Stock).IsRequired();
 
             builder.HasOne(p => p.Category).WithMany(c => c.Products);
-            builder.HasMany(p => p.Orders).WithMany(o => o.Products);
-            builder.HasMany(p => p.ShoppingCarts).WithOne(c => c.Product);
         }
     }
 }

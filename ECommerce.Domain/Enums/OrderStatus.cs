@@ -1,5 +1,5 @@
 ﻿using System.Runtime.Serialization;
-namespace ECommerce.Domain.Entities
+namespace ECommerce.Domain.Enums
 {
     public enum OrderStatus
     {
