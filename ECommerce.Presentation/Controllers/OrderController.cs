@@ -3,7 +3,6 @@ using AutoMapper;
 using ECommerce.Application.Common;
 using ECommerce.Application.Dtos.Order;
 using ECommerce.Application.IServices;
-using ECommerce.Domain.Entities;
 using ECommerce.Domain.IRepository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

@@ -70,11 +70,17 @@ namespace ECommerce_API.Presentation.Controllers
             {
                 var product = await _unitOfWork.Product.GetAsync(u => u.Id == ShoppingCartDTO.ProductId, false);
                 var UserId = User.FindFirst("uid")?.Value;
-                var CartFromDB = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, false);
+                var CartFromDB = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, false, includeProperties: "ShoppingCartItems");
                 if (CartFromDB != null)
                 {
                     var cartItem = AddCartItem(ShoppingCartDTO, CartFromDB.Id);
-                    CartFromDB.ShoppingCartItems.Add(cartItem);
+                    var item = CartFromDB.ShoppingCartItems.FirstOrDefault(i => i.ProductId == ShoppingCartDTO.ProductId);
+                    if (item != null)
+                    {
+                        item.Quantity++;
+                    }
+                    else
+                        CartFromDB.ShoppingCartItems.Add(cartItem);
                     await _unitOfWork.ShoppingCart.UpdateAsync(CartFromDB);
                 }
                 else
