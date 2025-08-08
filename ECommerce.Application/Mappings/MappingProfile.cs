@@ -18,7 +18,7 @@ namespace ECommerce.Application.Mappings
             CreateMap<Product, ProductCreateDTO>().ReverseMap();
             CreateMap<Product, ProductUpdateDTO>().ReverseMap();
 
-            CreateMap<ShoppingCart, ShoppingCartDTO>().ReverseMap();
+            CreateMap<ShoppingCartItem, ShoppingCartDTO>().ReverseMap();
             CreateMap<ShoppingCart, ShoppingCartCreateDTO>().ReverseMap();
             CreateMap<ShoppingCart, ShoppingCartUpdateDTO>().ReverseMap();
 

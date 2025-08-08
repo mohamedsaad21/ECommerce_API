@@ -3,6 +3,9 @@
     public class ShoppingCartCreateDTO
     {
         public int ProductId { get; set; }
-        public int Count { get; set; } = 1;
+        public string ProductName { get; set; }
+        public string ImageUrl { get; set; }
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
     }
 }

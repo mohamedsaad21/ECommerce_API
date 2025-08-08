@@ -1,8 +1,6 @@
-﻿using ECommerce.Domain.Entities;
-
-namespace ECommerce.Application.Dtos.ShoppingCart
+﻿namespace ECommerce.Domain.Entities
 {
-    public class ShoppingCartDTO
+    public class ShoppingCartItem
     {
         public int Id { get; set; }
         public string ProductName { get; set; }
@@ -10,5 +8,8 @@ namespace ECommerce.Application.Dtos.ShoppingCart
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public int ProductId { get; set; }
+        public Product Product { get; set; }
+        public int ShoppingCartId { get; set; }
+        public ShoppingCart ShoppingCart { get; set; }
     }
 }

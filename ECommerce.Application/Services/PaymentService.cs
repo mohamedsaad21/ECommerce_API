@@ -1,5 +1,6 @@
 ﻿using ECommerce.Application.IServices;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Enums;
 using ECommerce.Domain.IRepository;
 using Microsoft.Extensions.Configuration;
 using Stripe;
@@ -33,7 +34,7 @@ namespace ECommerce.Application.Services
                 {
                     var options = new PaymentIntentCreateOptions()
                     {
-                        Amount = (long)(order.SubTotal * 100),
+                        Amount = (long)(order.TotalAmount * 100),
                         Currency = "usd",
                         PaymentMethodTypes = new List<string>() { "card" }
                     };
@@ -47,7 +48,7 @@ namespace ECommerce.Application.Services
                 {
                     var options = new PaymentIntentUpdateOptions()
                     {
-                        Amount = (long)(order.SubTotal * 100)
+                        Amount = (long)(order.TotalAmount * 100)
                     };
 
                     await service.UpdateAsync(order.PaymentIntentId, options);

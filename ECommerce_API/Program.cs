@@ -156,8 +156,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "StackStore V1");
-        options.RoutePrefix = string.Empty;
-        //options.RoutePrefix = "swagger";
+        //options.RoutePrefix = string.Empty;
+        options.RoutePrefix = "swagger";
     });
 }
 app.UseHttpsRedirection();

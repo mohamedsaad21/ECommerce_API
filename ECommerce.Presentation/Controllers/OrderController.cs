@@ -39,7 +39,8 @@ namespace ECommerce_API.Presentation.Controllers
             try
             {
                 var userId = User.FindFirst("uid")?.Value;
-                _response.Result = _mapper.Map<IEnumerable<OrderDTO>>(await _unitOfWork.Order.GetAllAsync(u => u.ApplicationUserId == userId, pageSize:pageSize, pageNumber:pageNumber));
+                _response.Result = _mapper.Map<IEnumerable<OrderDTO>>
+                    (await _unitOfWork.Order.GetAllAsync(u => u.ApplicationUserId == userId, pageSize:pageSize, pageNumber:pageNumber, includeProperties: "OrderItems"));
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             } catch (Exception ex)
@@ -67,7 +68,7 @@ namespace ECommerce_API.Presentation.Controllers
                     return BadRequest(_response);
                 }
                 var userId = User.FindFirst("uid")?.Value;
-                var Order = await _unitOfWork.Order.GetAsync(u => u.Id == id && u.ApplicationUserId == userId, false, includeProperties: "Products");
+                var Order = await _unitOfWork.Order.GetAsync(u => u.Id == id && u.ApplicationUserId == userId, false, includeProperties: "OrderItems");
                 if (Order == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
