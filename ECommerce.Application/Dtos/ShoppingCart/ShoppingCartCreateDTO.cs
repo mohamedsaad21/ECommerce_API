@@ -3,6 +3,6 @@
     public class ShoppingCartCreateDTO
     {
         public int ProductId { get; set; }
-        public int Count { get; set; }
+        public int Count { get; set; } = 1;
     }
 }

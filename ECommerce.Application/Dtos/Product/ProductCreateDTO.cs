@@ -18,7 +18,7 @@ namespace ECommerce.Application.Dtos.Product
         [Required]
         public int stock { get; set; }
 
-        public List<IFormFile>? files { get; set; }
+        public List<IFormFile>? images { get; set; }
         public int CategoryId { get; set; }
     }
 }

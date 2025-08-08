@@ -37,11 +37,13 @@ namespace ECommerce_API.Presentation.Controllers
         [HttpGet]
         [ResponseCache(CacheProfileName = "Default30")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<APIResponse>> GetProducts(int pageSize = 3, int pageNumber = 1)
+        public async Task<ActionResult<APIResponse>> GetProducts(int? categoryId,int pageSize = 3, int pageNumber = 1)
         {
             try
             {
-                 var products = _mapper.Map<IEnumerable<ProductDTO>>(await _unitOfWork.Product.GetAllAsync(includeProperties: "Category", pageSize:pageSize, pageNumber:pageNumber));
+                var products = _mapper.Map<IEnumerable<ProductDTO>>(await _unitOfWork.Product
+                 .GetAllAsync(categoryId != null ? p => p.CategoryId == categoryId : null, includeProperties: "Category", pageSize: pageSize, pageNumber: pageNumber));
+                 
                 //products.Where(p => p.Images is null).Select(p => p.Images = _fileService.GetByUrls("Products", p.Id));
                 foreach(var  product in products)
                 {
@@ -112,7 +114,7 @@ namespace ECommerce_API.Presentation.Controllers
                 var Product = _mapper.Map<Product>(productDTO);
                 await _unitOfWork.Product.CreateAsync(Product);
                 await _unitOfWork.SaveAsync();
-                await _fileService.UploadAsync(Product.Id, productDTO.files!, _webHostEnvironment.WebRootPath, "Products");
+                await _fileService.UploadAsync(Product.Id, productDTO.images!, _webHostEnvironment.WebRootPath, "Products");
 
                 _response.Result = CreatedAtRoute("GetProduct", new { Id = Product.Id }, Product);
                 _response.StatusCode = HttpStatusCode.Created;

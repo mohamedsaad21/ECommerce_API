@@ -4,10 +4,7 @@ using ECommerce.Application.Dtos;
 using ECommerce.Application.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
-using System.Threading.Tasks;
 namespace ECommerce_API.Presentation .Controllers
 {
     [Route("api/[controller]")]
@@ -29,7 +26,9 @@ namespace ECommerce_API.Presentation .Controllers
         {
             if(!ModelState.IsValid) 
                 return BadRequest(ModelState);
+
             var result = await _authService.RegisterAsync(model);
+
             if (!result.IsAuthenticated)
                 return BadRequest(result.Message);
 
@@ -42,8 +41,6 @@ namespace ECommerce_API.Presentation .Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetTokenAsync(TokenRequestModel model)
         {
-            if(!ModelState.IsValid)
-                return BadRequest(ModelState);
             var result = await _authService.GetTokenAsync(model);
             if (!result.IsAuthenticated)
                 return BadRequest(result.Message);
@@ -95,7 +92,7 @@ namespace ECommerce_API.Presentation .Controllers
             if (!result)
                 return BadRequest("Token is invalid!");
 
-            return Ok(result);
+            return Ok();
         }
 
         private void SetRefreshTokenInCookie(string refreshToken, DateTime expires)
@@ -104,6 +101,9 @@ namespace ECommerce_API.Presentation .Controllers
             {
                 HttpOnly = true,
                 Expires = expires.ToLocalTime(),
+                 Secure = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.None
             };
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }

@@ -156,8 +156,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "StackStore V1");
-        //options.RoutePrefix = string.Empty;
-        options.RoutePrefix = "swagger";
+        options.RoutePrefix = string.Empty;
+        //options.RoutePrefix = "swagger";
     });
 }
 app.UseHttpsRedirection();
@@ -165,6 +165,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseAuthentication();
+
+app.UseCors(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
 app.UseAuthorization();
 
@@ -187,21 +189,20 @@ using (var scope = app.Services.CreateScope())
 {
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-    var FirstName = "Mohamed";
-    var LastName = "Saad";
+    //var FirstName = "Mohamed";
+    //var LastName = "Saad";
     var Username = "adminuser";
     var Email = "admin@stackstore.com";
     var password = "Ad@123";
 
     var user = new ApplicationUser
     {
-        FirstName = FirstName,
-        LastName = LastName,
+        //FirstName = FirstName,
+        //LastName = LastName,
         UserName = Username,
         Email = Email,
     };
     await userManager.CreateAsync(user, password);
     await userManager.AddToRoleAsync(user, SD.Role_Admin);
 }
-app.UseCors(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 app.Run();

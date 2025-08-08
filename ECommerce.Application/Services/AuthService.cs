@@ -39,8 +39,8 @@ namespace ECommerce.Application.Services
             {
                 UserName = model.Username,
                 Email = model.Email,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
+                //FirstName = model.FirstName,
+                //LastName = model.LastName,
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
@@ -57,6 +57,11 @@ namespace ECommerce.Application.Services
 
             var jwtSecurityToken = await CreatejwtToken(user);
 
+            var refreshToken = GenerateRefreshToken();
+            user.RefreshTokens.Add(refreshToken);
+            await _userManager.UpdateAsync(user);
+
+
             return new AuthModel
             {
                 IsAuthenticated = true,
@@ -64,7 +69,9 @@ namespace ECommerce.Application.Services
                 Username = model.Username,
                 Email = model.Email,
                 ExpiresOn = jwtSecurityToken.ValidTo,
-                Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken)
+                Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
+                RefreshToken = refreshToken.Token,
+                RefreshTokenExpiration = refreshToken.ExpiresOn
             };
             
         }
@@ -103,8 +110,7 @@ namespace ECommerce.Application.Services
                 user.RefreshTokens.Add(activeRefreshToken);
                 await _userManager.UpdateAsync(user);
             }
-
-                return authModel;
+             return authModel;
         }
 
         private async Task<JwtSecurityToken> CreatejwtToken(ApplicationUser user)
