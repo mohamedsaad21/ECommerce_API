@@ -74,7 +74,7 @@ namespace ECommerce_API.Presentation.Controllers
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
-                _response.Result = _mapper.Map<OrderDTO>(Order);
+                _response.Result = _mapper.Map<AddressDTO>(Order);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             } catch (Exception ex)
@@ -88,12 +88,12 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<APIResponse>> CreateOrder()
+        public async Task<ActionResult<APIResponse>> CreateOrder([FromBody] AddressDTO orderDTO)
         {
             try
             {
                 var UserId = User.FindFirst("uid")?.Value;
-                var order = await _orderService.CreateOrder(UserId!)!;
+                var order = await _orderService.CreateOrder(UserId!, orderDTO)!;
                 if(order == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -101,11 +101,7 @@ namespace ECommerce_API.Presentation.Controllers
                     return BadRequest(_response);
                 }
                 _response.StatusCode = HttpStatusCode.Created;
-                _response.Result = new
-                {
-                    OrderId = order.Id,
-                    ClientSecret = order.ClientSecret
-                };
+                _response.Result = _mapper.Map<OrderDTO>(order);
                 return Ok(_response);
             } catch (Exception ex)
             {
@@ -115,4 +111,5 @@ namespace ECommerce_API.Presentation.Controllers
             return _response;
         }
     }
+    
 }

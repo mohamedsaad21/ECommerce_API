@@ -101,7 +101,7 @@ namespace ECommerce_API.Presentation.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = SD.Role_Admin)]
+        //[Authorize(Roles = SD.Role_Admin)]
         [ServiceFilter(typeof(ProductValidateAttribute))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -128,7 +128,7 @@ namespace ECommerce_API.Presentation.Controllers
             return _response;
         }
         [HttpDelete("{id:int}", Name = "DeleteProduct")]
-        [Authorize(Roles = SD.Role_Admin)]
+        //[Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -164,7 +164,7 @@ namespace ECommerce_API.Presentation.Controllers
             return _response;
         }
         [HttpPut("{id:int}", Name = "UpdateProduct")]
-        [Authorize(Roles = SD.Role_Admin)]
+        //[Authorize(Roles = SD.Role_Admin)]
         [ServiceFilter(typeof(ProductValidateAttribute))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

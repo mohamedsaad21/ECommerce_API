@@ -46,7 +46,8 @@ namespace ECommerce_API.Presentation.Controllers
                 var UserId = User.FindFirst("uid")?.Value;
                 var cart = await _unitOfWork.ShoppingCart.GetAsync
                     (u => u.ApplicationUserId == UserId, includeProperties: "ShoppingCartItems");
-                _response.Result = _mapper.Map<IEnumerable<ShoppingCartDTO>>(cart.ShoppingCartItems);
+                
+                _response.Result = cart == null? [] : _mapper.Map<IEnumerable<ShoppingCartDTO>>(cart.ShoppingCartItems);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -106,29 +107,29 @@ namespace ECommerce_API.Presentation.Controllers
             }
             return _response;
         }
-        [HttpDelete("{ProductId:int}", Name = "RemoveItem")]
+        [HttpDelete("{id:int}", Name = "RemoveItem")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<APIResponse>> RemoveItem(int CartItemId)
+        public async Task<ActionResult<APIResponse>> RemoveItem(int id)
         {
             try
             {
-                if (CartItemId == 0)
+                if (id == 0)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.IsSuccess = false;
                     return BadRequest(_response);
                 }
                 var UserId = User.FindFirst("uid")?.Value;
-                var cart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, false);
+                var cart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, true, includeProperties: "ShoppingCartItems");
                 if(cart == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
-                var item = cart.ShoppingCartItems.Where(i => i.Id == CartItemId).FirstOrDefault();
+                var item = cart.ShoppingCartItems.Where(i => i.Id == id).FirstOrDefault();
                 if (item == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
@@ -146,6 +147,7 @@ namespace ECommerce_API.Presentation.Controllers
                 }
                 await _unitOfWork.SaveAsync();
                 return Ok(_response);
+
             }
             catch (Exception ex)
             {
@@ -154,16 +156,16 @@ namespace ECommerce_API.Presentation.Controllers
             }
             return _response;
         }
-        [HttpPut("plus/{ProductId:int}", Name = "Plus")]
+        [HttpPut("plus/{id:int}", Name = "Plus")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<APIResponse>> Plus(int CartItemId)
+        public async Task<ActionResult<APIResponse>> Plus(int id)
         {
             try
             {
-                if (CartItemId == 0)
+                if (id == 0)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.IsSuccess = false;
@@ -177,7 +179,7 @@ namespace ECommerce_API.Presentation.Controllers
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
-                var item = cart.ShoppingCartItems.Where(i => i.Id == CartItemId).FirstOrDefault();
+                var item = cart.ShoppingCartItems.Where(i => i.Id == id).FirstOrDefault();
                 if (item == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
@@ -199,16 +201,16 @@ namespace ECommerce_API.Presentation.Controllers
             }
             return _response;
         }
-        [HttpPut("minus/{ProductId:int}", Name = "Minus")]
+        [HttpPut("minus/{id:int}", Name = "Minus")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<APIResponse>> Minus(int CartItemId)
+        public async Task<ActionResult<APIResponse>> Minus(int id)
         {
             try
             {
-                if (CartItemId == 0)
+                if (id == 0)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.IsSuccess = false;
@@ -222,7 +224,7 @@ namespace ECommerce_API.Presentation.Controllers
                     _response.IsSuccess = false;
                     return NotFound(_response);
                 }
-                var item = cart.ShoppingCartItems.Where(i => i.Id == CartItemId).FirstOrDefault();
+                var item = cart.ShoppingCartItems.Where(i => i.Id == id).FirstOrDefault();
                 if (item == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;

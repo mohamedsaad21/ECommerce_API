@@ -306,6 +306,123 @@ namespace ECommerce.Infrastructure.Migrations
                             Name = "Winter Jacket",
                             Price = 89.99m,
                             Stock = 50
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CategoryId = 1,
+                            Description = "Wireless Bluetooth earbuds with microphone",
+                            Name = "AirPods",
+                            Price = 95.99m,
+                            Stock = 155
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CategoryId = 5,
+                            Description = "Casual star-patterned sports shoes",
+                            Name = "Star Shoes",
+                            Price = 195.99m,
+                            Stock = 114
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CategoryId = 1,
+                            Description = "128GB storage, dual camera",
+                            Name = "Smartphone",
+                            Price = 599.99m,
+                            Stock = 70
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CategoryId = 1,
+                            Description = "Fitness tracking, heart rate monitor",
+                            Name = "Smartwatch",
+                            Price = 199.99m,
+                            Stock = 45
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CategoryId = 1,
+                            Description = "RGB lighting, 16000 DPI",
+                            Name = "Gaming Mouse",
+                            Price = 49.99m,
+                            Stock = 120
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CategoryId = 2,
+                            Description = "Fleece, size L",
+                            Name = "Hoodie",
+                            Price = 34.99m,
+                            Stock = 65
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CategoryId = 2,
+                            Description = "Denim, slim fit",
+                            Name = "Jeans",
+                            Price = 44.99m,
+                            Stock = 90
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CategoryId = 5,
+                            Description = "Lightweight, breathable mesh",
+                            Name = "Running Shoes",
+                            Price = 75.99m,
+                            Stock = 55
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CategoryId = 4,
+                            Description = "Wooden, seats six",
+                            Name = "Dining Table",
+                            Price = 349.99m,
+                            Stock = 15
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CategoryId = 4,
+                            Description = "5-tier wooden rack",
+                            Name = "Bookshelf",
+                            Price = 129.99m,
+                            Stock = 25
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CategoryId = 4,
+                            Description = "3-seater, fabric upholstery",
+                            Name = "Sofa",
+                            Price = 499.99m,
+                            Stock = 10
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CategoryId = 5,
+                            Description = "Non-slip, 6mm thick",
+                            Name = "Yoga Mat",
+                            Price = 19.99m,
+                            Stock = 100
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CategoryId = 5,
+                            Description = "FIFA quality certified",
+                            Name = "Football",
+                            Price = 29.99m,
+                            Stock = 40
                         });
                 });
 
@@ -546,7 +663,48 @@ namespace ECommerce.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.OwnsOne("ECommerce.Domain.Entities.Address", "ShippingAddress", b1 =>
+                        {
+                            b1.Property<int>("OrderId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("City")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("City");
+
+                            b1.Property<string>("Country")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Country");
+
+                            b1.Property<string>("FirstName")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("FirstName");
+
+                            b1.Property<string>("LastName")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("LastName");
+
+                            b1.Property<string>("Street")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("Street");
+
+                            b1.HasKey("OrderId");
+
+                            b1.ToTable("Orders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderId");
+                        });
+
                     b.Navigation("ApplicationUser");
+
+                    b.Navigation("ShippingAddress")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ECommerce.Domain.Entities.OrderItem", b =>
