@@ -35,8 +35,8 @@ namespace ECommerce.Application.Services
                     var options = new PaymentIntentCreateOptions()
                     {
                         Amount = (long)(order.TotalAmount * 100),
-                        Currency = "usd",
-                        PaymentMethodTypes = new List<string>() { "card" }
+                        Currency = "USD",
+                        PaymentMethodTypes = new List<string>() { "card" },                        
                     };
 
                     intent = await service.CreateAsync(options);
@@ -54,7 +54,6 @@ namespace ECommerce.Application.Services
                     await service.UpdateAsync(order.PaymentIntentId, options);
 
                 }
-                order.OrderStatus = OrderStatus.PaymentReceived;
                 await _unitOfWork.Order.UpdateAsync(order);
                 await _unitOfWork.SaveAsync();
 

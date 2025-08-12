@@ -1,6 +1,4 @@
-﻿using ECommerce.Domain.Entities;
-
-namespace ECommerce.Application.Dtos.ShoppingCart
+﻿namespace ECommerce.Application.Dtos.ShoppingCart
 {
     public class ShoppingCartDTO
     {

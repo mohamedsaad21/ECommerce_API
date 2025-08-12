@@ -1,4 +1,6 @@
-﻿using ECommerce.Application.IServices;
+﻿using AutoMapper;
+using ECommerce.Application.Dtos.Order;
+using ECommerce.Application.IServices;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.IRepository;
@@ -6,25 +8,32 @@ namespace ECommerce.Application.Services
 {
     public class OrderService : IOrderService
     {
-        private readonly IPaymentService _paymentService;
         private readonly IUnitOfWork _unitOfWork;
-        public OrderService(IUnitOfWork unitOfWork, IPaymentService paymentService)
+        private readonly IMapper _mapper;
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
-            _paymentService = paymentService;
+            _mapper = mapper;
         }
-        public async Task<Order>? CreateOrder(string UserId)
+        public async Task<Order>? CreateOrder(string UserId, AddressDTO orderDTO)
         {
             var cart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, includeProperties: "ShoppingCartItems");
-            
+            if(cart is null)
+            {
+                return null;
+            }
+            var TotalAmount = cart.ShoppingCartItems.Select(i => i.UnitPrice * i.Quantity).Sum();
+
             var order = new Order
             {
                 ApplicationUserId = UserId!,
-                TotalAmount = 0,
+                TotalAmount = TotalAmount,
                 OrderStatus = OrderStatus.Pending,
                 PaymentStatus = PaymentStatus.Unpaid,
+                ShippingAddress = _mapper.Map<Address>(orderDTO)
             };
            await _unitOfWork.Order.CreateAsync(order);
+            await _unitOfWork.SaveAsync();
             var orderItems = cart.ShoppingCartItems.Select(o => new OrderItem
             {
                 ProductId = o.ProductId,
@@ -34,18 +43,7 @@ namespace ECommerce.Application.Services
                 UnitPrice = o.UnitPrice,
                 Quantity = o.Quantity
             });
-            //var orderProducts = products.Join(cart, p => p.Id, c => c.ProductId, (p, c) => new
-            //{
-            //    ProductId = p.Id,
-            //    p.Price,
-            //    c.Count
-            //}).ToList();
-            //var order = new Order
-            //{
-            //    ApplicationUserId = UserId!,
-            //    TotalAmount = orderProducts.Select(p => p.Price * p.Count).Sum(),
-            //    OrderStatus = OrderStatus.Pending
-            //};
+            
             order.OrderItems.AddRange(orderItems);
             // Reduce Stock For Each Product In Cart
             foreach (var item in orderItems)
@@ -56,14 +54,13 @@ namespace ECommerce.Application.Services
                     if (product.Stock >= item.Quantity)
                     {
                         product.Stock -= item.Quantity;
-                        //await _unitOfWork.ShoppingCart.RemoveAsync(item);
                     }
                     else return null; // Not Enough Stock
                 }
             }
-            var result = await _paymentService.CreateOrUpdatePaymentIntent(order);
+            await _unitOfWork.ShoppingCart.RemoveAsync(cart);
             await _unitOfWork.SaveAsync();
-            return result ? order : null;
+            return order;
         }
     }
 }

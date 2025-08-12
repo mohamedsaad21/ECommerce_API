@@ -13,6 +13,7 @@ namespace ECommerce.Domain.Entities
         public OrderStatus OrderStatus { get; set; } = OrderStatus.Pending;
         public DateTimeOffset OrderDate { get; set; } = DateTimeOffset.UtcNow;
         public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+        public Address ShippingAddress { get; set; }
         public string? PaymentIntentId { get; set; }
         public string? ClientSecret { get; set; }
     }
