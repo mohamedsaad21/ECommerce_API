@@ -4,6 +4,7 @@ using ECommerce.Application.Dtos.Order;
 using ECommerce.Application.Dtos.Product;
 using ECommerce.Application.Dtos.ShoppingCart;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Enums;
 namespace ECommerce.Application.Mappings
 {
     public class MappingProfile : Profile
@@ -23,8 +24,17 @@ namespace ECommerce.Application.Mappings
             CreateMap<ShoppingCart, ShoppingCartUpdateDTO>().ReverseMap();
 
             CreateMap<Address, AddressDTO>().ReverseMap();
-            CreateMap<Order, OrderDTO>().ReverseMap();
             CreateMap<OrderItem, OrderItemDTO>().ReverseMap();
+
+
+            CreateMap<Order, OrderDTO>().ReverseMap()
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod.ToString()))
+                .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.OrderStatus.ToString()));
+
+
+            CreateMap<Order, PaymentIntentDTO>().ReverseMap()
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod.ToString()))
+                .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.OrderStatus.ToString()));
         }
     }
 }

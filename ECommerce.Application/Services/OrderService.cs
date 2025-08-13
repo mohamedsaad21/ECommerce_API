@@ -28,8 +28,6 @@ namespace ECommerce.Application.Services
             {
                 ApplicationUserId = UserId!,
                 TotalAmount = TotalAmount,
-                OrderStatus = OrderStatus.Pending,
-                PaymentStatus = PaymentStatus.Unpaid,
                 ShippingAddress = _mapper.Map<Address>(orderDTO)
             };
            await _unitOfWork.Order.CreateAsync(order);
