@@ -16,15 +16,15 @@ namespace ECommerce.Application.Services
             _configuration = configuration;
             _unitOfWork = unitOfWork;
         }
-        public async Task<bool> CreateOrUpdatePaymentIntent(Order order)
+        public async Task<Order?> CreateOrUpdatePaymentIntent(int orderId)
         {
             try
             {
+                var order = await _unitOfWork.Order.GetAsync(o => o.Id == orderId);
+                if(order == null) 
+                    return null;
+
                 StripeConfiguration.ApiKey = _configuration["Stripe:Secretkey"];
-
-
-                if (order == null) return false;
-
 
                 var service = new PaymentIntentService();
 
@@ -54,14 +54,15 @@ namespace ECommerce.Application.Services
                     await service.UpdateAsync(order.PaymentIntentId, options);
 
                 }
+                order.PaymentMethod = ECommerce.Domain.Enums.PaymentMethod.Stripe;
                 await _unitOfWork.Order.UpdateAsync(order);
                 await _unitOfWork.SaveAsync();
 
-                return true;
+                return order;
             }
             catch (Exception ex)
             {
-                return false;
+                return null;
             }
         }
     }

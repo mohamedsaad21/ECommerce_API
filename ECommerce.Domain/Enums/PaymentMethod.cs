@@ -2,6 +2,7 @@
 {
     public enum PaymentMethod
     {
+        NotSpecified,
         CreditCard,
         Stripe,
         CashOnDelivery

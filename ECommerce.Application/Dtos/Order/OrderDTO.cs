@@ -7,9 +7,8 @@ namespace ECommerce.Application.Dtos.Order
     {
         public int Id { get; set; }
         public decimal TotalAmount { get; set; }
-        public PaymentStatus PaymentStatus { get; set; }
-        public PaymentMethod PaymentMethod { get; set; } 
-        public OrderStatus OrderStatus { get; set; } 
+        public string PaymentMethod { get; set; } 
+        public string OrderStatus { get; set; } 
         public DateTimeOffset OrderDate { get; set; } 
         public List<OrderItemDTO> OrderItems { get; set; } 
         public Address ShippingAddress { get; set; }
