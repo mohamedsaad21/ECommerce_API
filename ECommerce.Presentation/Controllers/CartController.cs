@@ -41,22 +41,13 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<APIResponse>> GetCartItems(int pageSize = 3, int pageNumber = 1)
         {
-            try
-            {
-                var UserId = User.FindFirst("uid")?.Value;
-                var cart = await _unitOfWork.ShoppingCart.GetAsync
-                    (u => u.ApplicationUserId == UserId, includeProperties: "ShoppingCartItems");
-                
-                _response.Result = cart == null? [] : _mapper.Map<IEnumerable<ShoppingCartDTO>>(cart.ShoppingCartItems);
-                _response.StatusCode = HttpStatusCode.OK;
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
-            }
-            return _response;
+            var UserId = User.FindFirst("uid")?.Value;
+            var cart = await _unitOfWork.ShoppingCart.GetAsync
+                (u => u.ApplicationUserId == UserId, includeProperties: "ShoppingCartItems");
+
+            _response.Result = cart == null ? [] : _mapper.Map<IEnumerable<ShoppingCartDTO>>(cart.ShoppingCartItems);
+            _response.StatusCode = HttpStatusCode.OK;
+            return Ok(_response);
         }
 
         [HttpPost]
@@ -67,45 +58,36 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<APIResponse>> AddItem([FromBody] ShoppingCartCreateDTO ShoppingCartDTO)
         {
-            try
+            var product = await _unitOfWork.Product.GetAsync(u => u.Id == ShoppingCartDTO.ProductId, false);
+            var UserId = User.FindFirst("uid")?.Value;
+            var CartFromDB = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, false, includeProperties: "ShoppingCartItems");
+            if (CartFromDB != null)
             {
-                var product = await _unitOfWork.Product.GetAsync(u => u.Id == ShoppingCartDTO.ProductId, false);
-                var UserId = User.FindFirst("uid")?.Value;
-                var CartFromDB = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, false, includeProperties: "ShoppingCartItems");
-                if (CartFromDB != null)
+                var cartItem = AddCartItem(ShoppingCartDTO, CartFromDB.Id);
+                var item = CartFromDB.ShoppingCartItems.FirstOrDefault(i => i.ProductId == ShoppingCartDTO.ProductId);
+                if (item != null)
                 {
-                    var cartItem = AddCartItem(ShoppingCartDTO, CartFromDB.Id);
-                    var item = CartFromDB.ShoppingCartItems.FirstOrDefault(i => i.ProductId == ShoppingCartDTO.ProductId);
-                    if (item != null)
-                    {
-                        item.Quantity++;
-                    }
-                    else
-                        CartFromDB.ShoppingCartItems.Add(cartItem);
-                    await _unitOfWork.ShoppingCart.UpdateAsync(CartFromDB);
+                    item.Quantity++;
                 }
                 else
-                {
-                    var newCart = new ShoppingCart
-                    {
-                        ApplicationUserId = UserId,
-                        CreatedOn = DateTime.Now,
-                    };
-                    await _unitOfWork.ShoppingCart.CreateAsync(newCart);
-                    await _unitOfWork.SaveAsync();
-                    var cartItem = AddCartItem(ShoppingCartDTO, newCart.Id);
-                    newCart.ShoppingCartItems.Add(cartItem);
-                }
-                _response.StatusCode = HttpStatusCode.Created;
-                await _unitOfWork.SaveAsync();
-                return Ok(_response);
+                    CartFromDB.ShoppingCartItems.Add(cartItem);
+                await _unitOfWork.ShoppingCart.UpdateAsync(CartFromDB);
             }
-            catch (Exception ex)
+            else
             {
-                _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
+                var newCart = new ShoppingCart
+                {
+                    ApplicationUserId = UserId,
+                    CreatedOn = DateTime.Now,
+                };
+                await _unitOfWork.ShoppingCart.CreateAsync(newCart);
+                await _unitOfWork.SaveAsync();
+                var cartItem = AddCartItem(ShoppingCartDTO, newCart.Id);
+                newCart.ShoppingCartItems.Add(cartItem);
             }
-            return _response;
+            _response.StatusCode = HttpStatusCode.Created;
+            await _unitOfWork.SaveAsync();
+            return Ok(_response);
         }
         [HttpDelete("{id:int}", Name = "RemoveItem")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -113,48 +95,38 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<APIResponse>> RemoveItem(int id)
         {
-            try
+            if (id == 0)
             {
-                if (id == 0)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                var UserId = User.FindFirst("uid")?.Value;
-                var cart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, true, includeProperties: "ShoppingCartItems");
-                if(cart == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-                var item = cart.ShoppingCartItems.Where(i => i.Id == id).FirstOrDefault();
-                if (item == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-                cart.ShoppingCartItems.Remove(item);
-                if (cart.ShoppingCartItems.Any())
-                {
-                    await _unitOfWork.ShoppingCart.UpdateAsync(cart);
-                }
-                else
-                {
-                    await _unitOfWork.ShoppingCart.RemoveAsync(cart);
-                }
-                await _unitOfWork.SaveAsync();
-                return Ok(_response);
-
-            }
-            catch (Exception ex)
-            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
             }
-            return _response;
+            var UserId = User.FindFirst("uid")?.Value;
+            var cart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, true, includeProperties: "ShoppingCartItems");
+            if(cart == null)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.IsSuccess = false;
+                return NotFound(_response);
+            }
+            var item = cart.ShoppingCartItems.Where(i => i.Id == id).FirstOrDefault();
+            if (item == null)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.IsSuccess = false;
+                return NotFound(_response);
+            }
+            cart.ShoppingCartItems.Remove(item);
+            if (cart.ShoppingCartItems.Any())
+            {
+                await _unitOfWork.ShoppingCart.UpdateAsync(cart);
+            }
+            else
+            {
+                await _unitOfWork.ShoppingCart.RemoveAsync(cart);
+            }
+            await _unitOfWork.SaveAsync();
+            return Ok(_response);
         }
         [HttpPut("plus/{id:int}", Name = "Plus")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -163,43 +135,34 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<APIResponse>> Plus(int id)
         {
-            try
+            if (id == 0)
             {
-                if (id == 0)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                var UserId = User.FindFirst("uid")?.Value;
-                var cart = await _unitOfWork.ShoppingCart.GetAsync(u =>  u.ApplicationUserId == UserId, false, includeProperties: "ShoppingCartItems");
-                if (cart == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-                var item = cart.ShoppingCartItems.Where(i => i.Id == id).FirstOrDefault();
-                if (item == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-
-                item.Quantity++;
-
-                await _unitOfWork.ShoppingCart.UpdateAsync(cart);
-                await _unitOfWork.SaveAsync();
-
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
             }
-            return _response;
+            var UserId = User.FindFirst("uid")?.Value;
+            var cart = await _unitOfWork.ShoppingCart.GetAsync(u =>  u.ApplicationUserId == UserId, false, includeProperties: "ShoppingCartItems");
+            if (cart == null)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.IsSuccess = false;
+                return NotFound(_response);
+            }
+            var item = cart.ShoppingCartItems.Where(i => i.Id == id).FirstOrDefault();
+            if (item == null)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.IsSuccess = false;
+                return NotFound(_response);
+            }
+
+            item.Quantity++;
+
+            await _unitOfWork.ShoppingCart.UpdateAsync(cart);
+            await _unitOfWork.SaveAsync();
+
+            return Ok(_response);
         }
         [HttpPut("minus/{id:int}", Name = "Minus")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -208,50 +171,41 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<APIResponse>> Minus(int id)
         {
-            try
+            if (id == 0)
             {
-                if (id == 0)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                var UserId = User.FindFirst("uid")?.Value;
-                var cart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, false, includeProperties: "ShoppingCartItems");
-                if (cart == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-                var item = cart.ShoppingCartItems.Where(i => i.Id == id).FirstOrDefault();
-                if (item == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-
-                if (item.Quantity > 1)
-                {
-                    item.Quantity--;
-                    await _unitOfWork.ShoppingCart.UpdateAsync(cart);
-                }
-                else
-                {
-                    cart.ShoppingCartItems.Clear();
-                    await _unitOfWork.ShoppingCart.RemoveAsync(cart);
-                }
-                await _unitOfWork.SaveAsync();
-
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
             }
-            return _response;
+            var UserId = User.FindFirst("uid")?.Value;
+            var cart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, false, includeProperties: "ShoppingCartItems");
+            if (cart == null)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.IsSuccess = false;
+                return NotFound(_response);
+            }
+            var item = cart.ShoppingCartItems.Where(i => i.Id == id).FirstOrDefault();
+            if (item == null)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.IsSuccess = false;
+                return NotFound(_response);
+            }
+
+            if (item.Quantity > 1)
+            {
+                item.Quantity--;
+                await _unitOfWork.ShoppingCart.UpdateAsync(cart);
+            }
+            else
+            {
+                cart.ShoppingCartItems.Clear();
+                await _unitOfWork.ShoppingCart.RemoveAsync(cart);
+            }
+            await _unitOfWork.SaveAsync();
+
+            return Ok(_response);
         }
         private ShoppingCartItem AddCartItem(ShoppingCartCreateDTO itemDTO, int CartId)
         {

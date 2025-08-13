@@ -35,19 +35,11 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<APIResponse>> GetOrders(int pageSize = 3, int pageNumber = 1)
         {
-            try
-            {
-                var userId = User.FindFirst("uid")?.Value;
-                _response.Result = _mapper.Map<IEnumerable<OrderDTO>>
-                    (await _unitOfWork.Order.GetAllAsync(u => u.ApplicationUserId == userId, pageSize:pageSize, pageNumber:pageNumber, includeProperties: "OrderItems"));
-                _response.StatusCode = HttpStatusCode.OK;
-                return Ok(_response);
-            } catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
-            }
-            return _response;
+            var userId = User.FindFirst("uid")?.Value;
+            _response.Result = _mapper.Map<IEnumerable<OrderDTO>>
+                (await _unitOfWork.Order.GetAllAsync(u => u.ApplicationUserId == userId, pageSize:pageSize, pageNumber:pageNumber, includeProperties: "OrderItems"));
+            _response.StatusCode = HttpStatusCode.OK;
+            return Ok(_response);
         }
 
         [HttpGet("{id:int}", Name = "GetOrder")]
@@ -58,31 +50,23 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<APIResponse>> GetOrder(int id)
         {
-            try
+            if (id == 0)
             {
-                if (id == 0)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                var userId = User.FindFirst("uid")?.Value;
-                var Order = await _unitOfWork.Order.GetAsync(u => u.Id == id && u.ApplicationUserId == userId, false, includeProperties: "OrderItems");
-                if (Order == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-                _response.Result = _mapper.Map<AddressDTO>(Order);
-                _response.StatusCode = HttpStatusCode.OK;
-                return Ok(_response);
-            } catch (Exception ex)
-            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
             }
-            return _response;
+            var userId = User.FindFirst("uid")?.Value;
+            var Order = await _unitOfWork.Order.GetAsync(u => u.Id == id && u.ApplicationUserId == userId, false, includeProperties: "OrderItems");
+            if (Order == null)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.IsSuccess = false;
+                return NotFound(_response);
+            }
+            _response.Result = _mapper.Map<AddressDTO>(Order);
+            _response.StatusCode = HttpStatusCode.OK;
+            return Ok(_response);
         }
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -90,26 +74,17 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<APIResponse>> CreateOrder([FromBody] AddressDTO orderDTO)
         {
-            try
+            var UserId = User.FindFirst("uid")?.Value;
+            var order = await _orderService.CreateOrder(UserId!, orderDTO)!;
+            if(order == null)
             {
-                var UserId = User.FindFirst("uid")?.Value;
-                var order = await _orderService.CreateOrder(UserId!, orderDTO)!;
-                if(order == null)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                _response.StatusCode = HttpStatusCode.Created;
-                _response.Result = _mapper.Map<OrderDTO>(order);
-                return Ok(_response);
-            } catch (Exception ex)
-            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
             }
-            return _response;
+            _response.StatusCode = HttpStatusCode.Created;
+            _response.Result = _mapper.Map<OrderDTO>(order);
+            return Ok(_response);
         }
     }
-    
 }

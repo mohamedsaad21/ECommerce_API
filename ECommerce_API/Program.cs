@@ -3,6 +3,7 @@ using ECommerce.Application.Filters;
 using ECommerce.Application.IServices;
 using ECommerce.Application.Mappings;
 using ECommerce.Application.Services;
+using ECommerce.Application.Validators.Filters;
 using ECommerce.Domain.Entities;
 using ECommerce.Domain.IRepository;
 using ECommerce.Infrastructure.Persistence;
@@ -31,6 +32,7 @@ builder.Services.AddControllers(options =>
             Duration = 30
         }
         );
+    options.Filters.Add(new ExceptionHandlingFilter());
 }).AddNewtonsoftJson(options =>
 {
     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;

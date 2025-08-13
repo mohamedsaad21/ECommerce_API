@@ -37,30 +37,19 @@ namespace ECommerce_API.Presentation.Controllers
         [HttpGet]
         [ResponseCache(CacheProfileName = "Default30")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<APIResponse>> GetProducts(int? categoryId,int pageSize = 3, int pageNumber = 1)
+        public async Task<ActionResult<APIResponse>> GetProducts(int? categoryId, int pageSize = 3, int pageNumber = 1)
         {
-            try
-            {
-                var products = _mapper.Map<IEnumerable<ProductDTO>>(await _unitOfWork.Product
-                 .GetAllAsync(categoryId != null ? p => p.CategoryId == categoryId : null, includeProperties: "Category", pageSize: pageSize, pageNumber: pageNumber));
-                 
-                //products.Where(p => p.Images is null).Select(p => p.Images = _fileService.GetByUrls("Products", p.Id));
-                foreach(var  product in products)
-                {
-                    product.images = _fileService.GetByUrls(product.Id, _webHostEnvironment.WebRootPath,"Products");
-                }
+            var products = _mapper.Map<IEnumerable<ProductDTO>>(await _unitOfWork.Product
+                .GetAllAsync(categoryId != null ? p => p.CategoryId == categoryId : null, includeProperties: "Category", pageSize: pageSize, pageNumber: pageNumber));
 
-                _response.Result = products;
-                _response.StatusCode = HttpStatusCode.OK;
-                return Ok(_response);
-
-            }
-            catch (Exception ex)
+            //products.Where(p => p.Images is null).Select(p => p.Images = _fileService.GetByUrls("Products", p.Id));
+            foreach (var product in products)
             {
-                _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
+                product.images = _fileService.GetByUrls(product.Id, _webHostEnvironment.WebRootPath, "Products");
             }
-            return _response;
+            _response.Result = products;
+            _response.StatusCode = HttpStatusCode.OK;
+            return Ok(_response);
         }
 
         [HttpGet("{id:int}", Name = "GetProduct")]
@@ -70,38 +59,28 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<APIResponse>> GetProduct(int id)
         {
-            try
+            if (id == 0)
             {
-                if (id == 0)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                var Product = await _unitOfWork.Product.GetAsync(u => u.Id == id, false, includeProperties: "Category");
-                if (Product == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                var product = _mapper.Map<ProductDTO>(Product);
-                product.images = _fileService.GetByUrls(product.Id, _webHostEnvironment.WebRootPath, "Products");
-                _response.Result = product;
-                _response.StatusCode = HttpStatusCode.OK;
-                return Ok(_response);
-
-            }
-            catch (Exception ex)
-            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
             }
-            return _response;
+            var Product = await _unitOfWork.Product.GetAsync(u => u.Id == id, false, includeProperties: "Category");
+            if (Product == null)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.IsSuccess = false;
+                return BadRequest(_response);
+            }
+            var product = _mapper.Map<ProductDTO>(Product);
+            product.images = _fileService.GetByUrls(product.Id, _webHostEnvironment.WebRootPath, "Products");
+            _response.Result = product;
+            _response.StatusCode = HttpStatusCode.OK;
+            return Ok(_response);
         }
 
         [HttpPost]
-        //[Authorize(Roles = SD.Role_Admin)]
+        [Authorize(Roles = SD.Role_Admin)]
         [ServiceFilter(typeof(ProductValidateAttribute))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -109,26 +88,17 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<APIResponse>> CreateProduct([FromForm] ProductCreateDTO productDTO)
         {
-            try
-            {
-                var Product = _mapper.Map<Product>(productDTO);
-                await _unitOfWork.Product.CreateAsync(Product);
-                await _unitOfWork.SaveAsync();
-                await _fileService.UploadAsync(Product.Id, productDTO.images!, _webHostEnvironment.WebRootPath, "Products");
+            var Product = _mapper.Map<Product>(productDTO);
+            await _unitOfWork.Product.CreateAsync(Product);
+            await _unitOfWork.SaveAsync();
+            await _fileService.UploadAsync(Product.Id, productDTO.images!, _webHostEnvironment.WebRootPath, "Products");
 
-                _response.Result = CreatedAtRoute("GetProduct", new { Id = Product.Id }, Product);
-                _response.StatusCode = HttpStatusCode.Created;
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
-            }
-            return _response;
+            _response.Result = CreatedAtRoute("GetProduct", new { Id = Product.Id }, Product);
+            _response.StatusCode = HttpStatusCode.Created;
+            return Ok(_response);
         }
         [HttpDelete("{id:int}", Name = "DeleteProduct")]
-        //[Authorize(Roles = SD.Role_Admin)]
+        [Authorize(Roles = SD.Role_Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -136,35 +106,26 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<APIResponse>> DeleteProduct(int id)
         {
-            try
+            if (id == 0)
             {
-                if (id == 0)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                var Product = await _unitOfWork.Product.GetAsync(u => u.Id == id, false);
-                if (Product == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-                await _unitOfWork.Product.RemoveAsync(Product);
-                await _unitOfWork.SaveAsync();
-                _fileService.DeleteAsync(Product.Id, _webHostEnvironment.WebRootPath, "Products");
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
             }
-            return _response;
+            var Product = await _unitOfWork.Product.GetAsync(u => u.Id == id, false);
+            if (Product == null)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.IsSuccess = false;
+                return NotFound(_response);
+            }
+            await _unitOfWork.Product.RemoveAsync(Product);
+            await _unitOfWork.SaveAsync();
+            _fileService.DeleteAsync(Product.Id, _webHostEnvironment.WebRootPath, "Products");
+            return Ok(_response);
         }
         [HttpPut("{id:int}", Name = "UpdateProduct")]
-        //[Authorize(Roles = SD.Role_Admin)]
+        [Authorize(Roles = SD.Role_Admin)]
         [ServiceFilter(typeof(ProductValidateAttribute))]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -173,34 +134,25 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<APIResponse>> UpdateProduct(int id, [FromBody] ProductUpdateDTO productDTO)
         {
-            try
+            if (id == 0 || id != productDTO.Id)
             {
-                if (id == 0  || id != productDTO.Id)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                var Product = await _unitOfWork.Product.GetAsync(u => u.Id == id, false);
-                if (Product == null)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.IsSuccess = false;
-                    return NotFound(_response);
-                }
-                Product = _mapper.Map<Product>(productDTO);
-
-                await _unitOfWork.Product.UpdateAsync(Product);
-                await _unitOfWork.SaveAsync();
-
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
             }
-            return _response;
+            var Product = await _unitOfWork.Product.GetAsync(u => u.Id == id, false);
+            if (Product == null)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.IsSuccess = false;
+                return NotFound(_response);
+            }
+            Product = _mapper.Map<Product>(productDTO);
+
+            await _unitOfWork.Product.UpdateAsync(Product);
+            await _unitOfWork.SaveAsync();
+
+            return Ok(_response);
         }
     }
 }

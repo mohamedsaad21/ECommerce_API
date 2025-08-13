@@ -35,25 +35,16 @@ namespace ECommerce.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<APIResponse>> CreateOrUpdatePaymentIntent(int orderId)
         {
-            try
+            var order = await _paymentService.CreateOrUpdatePaymentIntent(orderId);
+            if (order == null)
             {
-                var order = await _paymentService.CreateOrUpdatePaymentIntent(orderId);
-                if (order == null)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.IsSuccess = false;
-                    return BadRequest(_response);
-                }
-                _response.Result = _mapper.Map<PaymentIntentDTO>(order);
-                _response.StatusCode = HttpStatusCode.OK;
-                return Ok(_response);
-            }
-            catch(Exception ex)
-            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return BadRequest(_response);
             }
-            return _response;
+            _response.Result = _mapper.Map<PaymentIntentDTO>(order);
+            _response.StatusCode = HttpStatusCode.OK;
+            return Ok(_response);
         }
     }
 }
