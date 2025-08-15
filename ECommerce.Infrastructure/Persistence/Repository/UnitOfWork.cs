@@ -1,4 +1,5 @@
-﻿using ECommerce.Domain.IRepository;
+﻿using ECommerce.Domain.Entities.OrderAggregate;
+using ECommerce.Domain.IRepository;
 
 namespace ECommerce.Infrastructure.Persistence.Repository
 {
@@ -9,6 +10,7 @@ namespace ECommerce.Infrastructure.Persistence.Repository
         public IProductRepository Product { get; private set; }
         public IShoppingCartRepository ShoppingCart { get; private set; }
         public IOrderRepository Order { get; private set; }
+        public IRepository<DeliveryMethod> DeliveryMethodsRepository { get; private set; }
         public UnitOfWork(ApplicationDbContext db)
         {
             _db = db;
@@ -16,6 +18,7 @@ namespace ECommerce.Infrastructure.Persistence.Repository
             Product = new ProductRepository(_db);
             ShoppingCart = new ShoppingCartRepository(_db);
             Order = new OrderRepository(_db);
+            DeliveryMethodsRepository = new Repository<DeliveryMethod>(_db);
         }
 
         public async Task SaveAsync()

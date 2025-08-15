@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using ECommerce.Application.Dtos.Order;
 using ECommerce.Application.IServices;
-using ECommerce.Domain.Entities;
-using ECommerce.Domain.Enums;
+using ECommerce.Domain.Entities.OrderAggregate;
 using ECommerce.Domain.IRepository;
+using ECommerce.Domain.Enums;
 namespace ECommerce.Application.Services
 {
     public class OrderService : IOrderService
@@ -15,23 +15,29 @@ namespace ECommerce.Application.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-        public async Task<Order>? CreateOrder(string UserId, AddressDTO orderDTO)
+        public async Task<Order>? CreateOrder(string UserId, OrderCreateDTO orderDTO)
         {
             var cart = await _unitOfWork.ShoppingCart.GetAsync(u => u.ApplicationUserId == UserId, includeProperties: "ShoppingCartItems");
-            if(cart is null)
+            var deliveryMethod = await _unitOfWork.DeliveryMethodsRepository.GetAsync(m => m.Id == orderDTO.DeliveryMethodId);
+            if(cart == null || deliveryMethod == null)
             {
                 return null;
             }
-            var TotalAmount = cart.ShoppingCartItems.Select(i => i.UnitPrice * i.Quantity).Sum();
+            var subtotal = cart.ShoppingCartItems.Select(i => i.UnitPrice * i.Quantity).Sum();
 
             var order = new Order
             {
                 ApplicationUserId = UserId!,
-                TotalAmount = TotalAmount,
-                ShippingAddress = _mapper.Map<Address>(orderDTO)
+                Subtotal = subtotal,
+                DeliveryMethod = deliveryMethod,
+                DeliveryMethodId = orderDTO.DeliveryMethodId,
+                OrderDelivery = new OrderDelivery
+                {
+                    ShippingAddress = _mapper.Map<Address>(orderDTO.ShippingAddress),
+                    DeliveryStatus = DeliveryStatus.Pending                    
+                }                
             };
            await _unitOfWork.Order.CreateAsync(order);
-            await _unitOfWork.SaveAsync();
             var orderItems = cart.ShoppingCartItems.Select(o => new OrderItem
             {
                 ProductId = o.ProductId,

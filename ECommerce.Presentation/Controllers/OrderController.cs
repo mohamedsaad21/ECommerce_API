@@ -36,7 +36,7 @@ namespace ECommerce_API.Presentation.Controllers
         public async Task<ActionResult<APIResponse>> GetOrders(int pageSize = 3, int pageNumber = 1)
         {
             var userId = User.FindFirst("uid")?.Value;
-            _response.Result = _mapper.Map<IEnumerable<OrderDTO>>
+            _response.Result = _mapper.Map<IEnumerable<OrderToReturnDTO>>
                 (await _unitOfWork.Order.GetAllAsync(u => u.ApplicationUserId == userId, pageSize:pageSize, pageNumber:pageNumber, includeProperties: "OrderItems"));
             _response.StatusCode = HttpStatusCode.OK;
             return Ok(_response);
@@ -72,7 +72,7 @@ namespace ECommerce_API.Presentation.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<APIResponse>> CreateOrder([FromBody] AddressDTO orderDTO)
+        public async Task<ActionResult<APIResponse>> CreateOrder([FromBody] OrderCreateDTO orderDTO)
         {
             var UserId = User.FindFirst("uid")?.Value;
             var order = await _orderService.CreateOrder(UserId!, orderDTO)!;
@@ -83,7 +83,7 @@ namespace ECommerce_API.Presentation.Controllers
                 return BadRequest(_response);
             }
             _response.StatusCode = HttpStatusCode.Created;
-            _response.Result = _mapper.Map<OrderDTO>(order);
+            _response.Result = _mapper.Map<OrderToReturnDTO>(order);
             return Ok(_response);
         }
     }

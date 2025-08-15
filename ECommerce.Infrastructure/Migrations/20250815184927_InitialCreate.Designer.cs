@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerce.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250812235127_InitialCreate")]
+    [Migration("20250815184927_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -135,7 +135,35 @@ namespace ECommerce.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("ECommerce.Domain.Entities.Order", b =>
+            modelBuilder.Entity("ECommerce.Domain.Entities.OrderAggregate.DeliveryMethod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("DeliveryTime")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShortName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DeliveryMethods");
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Entities.OrderAggregate.Order", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -150,11 +178,11 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<string>("ClientSecret")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("DeliveryMethodId")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset>("OrderDate")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("OrderStatus")
-                        .HasColumnType("int");
 
                     b.Property<string>("PaymentIntentId")
                         .HasColumnType("nvarchar(max)");
@@ -162,17 +190,47 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<int>("PaymentMethod")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("TotalAmount")
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Subtotal")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
 
+                    b.HasIndex("DeliveryMethodId");
+
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("ECommerce.Domain.Entities.OrderItem", b =>
+            modelBuilder.Entity("ECommerce.Domain.Entities.OrderAggregate.OrderDelivery", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DeliveryStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TrackingNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.ToTable("OrderDeliveries");
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Entities.OrderAggregate.OrderItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -655,7 +713,7 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Navigation("RefreshTokens");
                 });
 
-            modelBuilder.Entity("ECommerce.Domain.Entities.Order", b =>
+            modelBuilder.Entity("ECommerce.Domain.Entities.OrderAggregate.Order", b =>
                 {
                     b.HasOne("ECommerce.Domain.Entities.ApplicationUser", "ApplicationUser")
                         .WithMany()
@@ -663,20 +721,34 @@ namespace ECommerce.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("ECommerce.Domain.Entities.Address", "ShippingAddress", b1 =>
+                    b.HasOne("ECommerce.Domain.Entities.OrderAggregate.DeliveryMethod", "DeliveryMethod")
+                        .WithMany("Orders")
+                        .HasForeignKey("DeliveryMethodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("DeliveryMethod");
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Entities.OrderAggregate.OrderDelivery", b =>
+                {
+                    b.HasOne("ECommerce.Domain.Entities.OrderAggregate.Order", "order")
+                        .WithOne("OrderDelivery")
+                        .HasForeignKey("ECommerce.Domain.Entities.OrderAggregate.OrderDelivery", "OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("ECommerce.Domain.Entities.OrderAggregate.Address", "ShippingAddress", b1 =>
                         {
-                            b1.Property<int>("OrderId")
+                            b1.Property<int>("OrderDeliveryId")
                                 .HasColumnType("int");
 
                             b1.Property<string>("City")
                                 .IsRequired()
                                 .HasColumnType("nvarchar(max)")
                                 .HasColumnName("City");
-
-                            b1.Property<string>("Country")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("Country");
 
                             b1.Property<string>("FirstName")
                                 .IsRequired()
@@ -688,28 +760,38 @@ namespace ECommerce.Infrastructure.Migrations
                                 .HasColumnType("nvarchar(max)")
                                 .HasColumnName("LastName");
 
+                            b1.Property<string>("State")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("State");
+
                             b1.Property<string>("Street")
                                 .IsRequired()
                                 .HasColumnType("nvarchar(max)")
                                 .HasColumnName("Street");
 
-                            b1.HasKey("OrderId");
+                            b1.Property<string>("ZipCode")
+                                .IsRequired()
+                                .HasColumnType("nvarchar(max)")
+                                .HasColumnName("ZipCode");
 
-                            b1.ToTable("Orders");
+                            b1.HasKey("OrderDeliveryId");
+
+                            b1.ToTable("OrderDeliveries");
 
                             b1.WithOwner()
-                                .HasForeignKey("OrderId");
+                                .HasForeignKey("OrderDeliveryId");
                         });
-
-                    b.Navigation("ApplicationUser");
 
                     b.Navigation("ShippingAddress")
                         .IsRequired();
+
+                    b.Navigation("order");
                 });
 
-            modelBuilder.Entity("ECommerce.Domain.Entities.OrderItem", b =>
+            modelBuilder.Entity("ECommerce.Domain.Entities.OrderAggregate.OrderItem", b =>
                 {
-                    b.HasOne("ECommerce.Domain.Entities.Order", "Order")
+                    b.HasOne("ECommerce.Domain.Entities.OrderAggregate.Order", "Order")
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -823,8 +905,16 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Navigation("Products");
                 });
 
-            modelBuilder.Entity("ECommerce.Domain.Entities.Order", b =>
+            modelBuilder.Entity("ECommerce.Domain.Entities.OrderAggregate.DeliveryMethod", b =>
                 {
+                    b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Entities.OrderAggregate.Order", b =>
+                {
+                    b.Navigation("OrderDelivery")
+                        .IsRequired();
+
                     b.Navigation("OrderItems");
                 });
 
