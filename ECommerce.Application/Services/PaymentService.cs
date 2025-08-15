@@ -1,5 +1,6 @@
 ﻿using ECommerce.Application.IServices;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Entities.OrderAggregate;
 using ECommerce.Domain.Enums;
 using ECommerce.Domain.IRepository;
 using Microsoft.Extensions.Configuration;
@@ -20,7 +21,7 @@ namespace ECommerce.Application.Services
         {
             try
             {
-                var order = await _unitOfWork.Order.GetAsync(o => o.Id == orderId);
+                var order = await _unitOfWork.Order.GetAsync(o => o.Id == orderId, includeProperties: "DeliveryMethod");
                 if(order == null) 
                     return null;
 
@@ -34,7 +35,7 @@ namespace ECommerce.Application.Services
                 {
                     var options = new PaymentIntentCreateOptions()
                     {
-                        Amount = (long)(order.TotalAmount * 100),
+                        Amount = (long)(order.Total * 100),
                         Currency = "USD",
                         PaymentMethodTypes = new List<string>() { "card" },                        
                     };
@@ -48,7 +49,7 @@ namespace ECommerce.Application.Services
                 {
                     var options = new PaymentIntentUpdateOptions()
                     {
-                        Amount = (long)(order.TotalAmount * 100)
+                        Amount = (long)(order.Subtotal * 100)
                     };
 
                     await service.UpdateAsync(order.PaymentIntentId, options);

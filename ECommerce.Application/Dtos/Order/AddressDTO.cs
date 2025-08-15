@@ -13,6 +13,8 @@ namespace ECommerce.Application.Dtos.Order
         [Required]
         public string City { get; set; }
         [Required]
-        public string Country { get; set; }
+        public string ZipCode { get; set; }
+        [Required]
+        public string State { get; set; }
     }
 }

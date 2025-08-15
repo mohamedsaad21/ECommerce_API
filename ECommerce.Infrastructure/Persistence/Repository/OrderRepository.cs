@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Entities;
+﻿using ECommerce.Domain.Entities.OrderAggregate;
 using ECommerce.Domain.IRepository;
 namespace ECommerce.Infrastructure.Persistence.Repository
 {

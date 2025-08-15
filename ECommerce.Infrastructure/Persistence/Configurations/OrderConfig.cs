@@ -1,4 +1,4 @@
-﻿using ECommerce.Domain.Entities;
+﻿using ECommerce.Domain.Entities.OrderAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,14 +10,8 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
         {
             builder.HasMany(o => o.OrderItems).WithOne(i => i.Order).HasForeignKey(i => i.OrderId);
 
-            builder.OwnsOne(o => o.ShippingAddress, a =>
-            {
-                a.Property(a => a.FirstName).HasColumnName("FirstName");
-                a.Property(a => a.LastName).HasColumnName("LastName");
-                a.Property(a => a.Street).HasColumnName("Street");
-                a.Property(a => a.City).HasColumnName("City");
-                a.Property(a => a.Country).HasColumnName("Country");
-            });
+            builder.HasOne(o => o.OrderDelivery).WithOne(d => d.order).HasForeignKey<OrderDelivery>(d => d.OrderId);
+            builder.HasOne(o => o.DeliveryMethod).WithMany(m => m.Orders).HasForeignKey(o => o.DeliveryMethodId);
         }
     }
 }

@@ -4,6 +4,7 @@ using ECommerce.Application.Dtos.Order;
 using ECommerce.Application.Dtos.Product;
 using ECommerce.Application.Dtos.ShoppingCart;
 using ECommerce.Domain.Entities;
+using ECommerce.Domain.Entities.OrderAggregate;
 using ECommerce.Domain.Enums;
 namespace ECommerce.Application.Mappings
 {
@@ -27,14 +28,14 @@ namespace ECommerce.Application.Mappings
             CreateMap<OrderItem, OrderItemDTO>().ReverseMap();
 
 
-            CreateMap<Order, OrderDTO>().ReverseMap()
-                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod.ToString()))
-                .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.OrderStatus.ToString()));
+            CreateMap<OrderToReturnDTO, Order>().ReverseMap()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.DeliveryMethod, opt => opt.MapFrom(src => src.DeliveryMethod.ShortName));
 
 
-            CreateMap<Order, PaymentIntentDTO>().ReverseMap()
-                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod.ToString()))
-                .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.OrderStatus.ToString()));
+            CreateMap<PaymentIntentDTO, Order>().ReverseMap()
+                .ForMember(dest => dest.OrderStatus, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.PaymentMethod, opt => opt.MapFrom(src => src.PaymentMethod.ToString()));
         }
     }
 }
