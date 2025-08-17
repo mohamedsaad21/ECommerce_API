@@ -22,5 +22,8 @@ namespace ECommerce.Application.Dtos.Product
         public List<string>? images { get; set; }
 
         public int CategoryId { get; set; }
+
+        public double AverageRating { get; set; }
+
     }
 }

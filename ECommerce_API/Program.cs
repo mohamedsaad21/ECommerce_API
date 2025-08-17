@@ -59,6 +59,7 @@ builder.Services.AddAutoMapper(mapper => mapper.AddProfile<MappingProfile>());
 builder.Services.AddScoped<ProductValidateAttribute>();
 builder.Services.AddScoped<ShoppingCartValidateAttribute>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IFileService, FileService>();
 

@@ -1,4 +1,5 @@
-﻿using ECommerce.Domain.Entities.OrderAggregate;
+﻿using ECommerce.Domain.Entities;
+using ECommerce.Domain.Entities.OrderAggregate;
 
 namespace ECommerce.Domain.IRepository
 {
@@ -10,6 +11,7 @@ namespace ECommerce.Domain.IRepository
         IShoppingCartRepository ShoppingCart { get; }
 
         IRepository<DeliveryMethod> DeliveryMethodsRepository { get; }
+        IRepository<Feedback> Feedbacks { get; }
         Task SaveAsync();
     }
 }

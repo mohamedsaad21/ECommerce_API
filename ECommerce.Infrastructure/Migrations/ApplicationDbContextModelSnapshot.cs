@@ -132,6 +132,43 @@ namespace ECommerce.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ECommerce.Domain.Entities.Feedback", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Feedbacks");
+                });
+
             modelBuilder.Entity("ECommerce.Domain.Entities.OrderAggregate.DeliveryMethod", b =>
                 {
                     b.Property<int>("Id")
@@ -178,8 +215,8 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Property<int>("DeliveryMethodId")
                         .HasColumnType("int");
 
-                    b.Property<DateTimeOffset>("OrderDate")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("PaymentIntentId")
                         .HasColumnType("nvarchar(max)");
@@ -272,6 +309,9 @@ namespace ECommerce.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<double>("AverageRating")
+                        .HasColumnType("float");
+
                     b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
@@ -302,6 +342,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
+                            AverageRating = 0.0,
                             CategoryId = 1,
                             Description = "15-inch display, 8GB RAM",
                             Name = "Laptop",
@@ -311,6 +352,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
+                            AverageRating = 0.0,
                             CategoryId = 1,
                             Description = "Noise-cancelling wireless",
                             Name = "Headphones",
@@ -320,6 +362,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
+                            AverageRating = 0.0,
                             CategoryId = 2,
                             Description = "Cotton, size M",
                             Name = "T-Shirt",
@@ -329,6 +372,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
+                            AverageRating = 0.0,
                             CategoryId = 4,
                             Description = "Ergonomic, adjustable height",
                             Name = "Office Chair",
@@ -338,6 +382,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 5,
+                            AverageRating = 0.0,
                             CategoryId = 5,
                             Description = "Official size and weight",
                             Name = "Basketball",
@@ -347,6 +392,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 6,
+                            AverageRating = 0.0,
                             CategoryId = 3,
                             Description = "300 pages, best-seller",
                             Name = "Fiction Novel",
@@ -356,6 +402,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 7,
+                            AverageRating = 0.0,
                             CategoryId = 2,
                             Description = "Waterproof, hooded",
                             Name = "Winter Jacket",
@@ -365,6 +412,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 8,
+                            AverageRating = 0.0,
                             CategoryId = 1,
                             Description = "Wireless Bluetooth earbuds with microphone",
                             Name = "AirPods",
@@ -374,6 +422,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 9,
+                            AverageRating = 0.0,
                             CategoryId = 5,
                             Description = "Casual star-patterned sports shoes",
                             Name = "Star Shoes",
@@ -383,6 +432,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 10,
+                            AverageRating = 0.0,
                             CategoryId = 1,
                             Description = "128GB storage, dual camera",
                             Name = "Smartphone",
@@ -392,6 +442,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 11,
+                            AverageRating = 0.0,
                             CategoryId = 1,
                             Description = "Fitness tracking, heart rate monitor",
                             Name = "Smartwatch",
@@ -401,6 +452,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 12,
+                            AverageRating = 0.0,
                             CategoryId = 1,
                             Description = "RGB lighting, 16000 DPI",
                             Name = "Gaming Mouse",
@@ -410,6 +462,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 13,
+                            AverageRating = 0.0,
                             CategoryId = 2,
                             Description = "Fleece, size L",
                             Name = "Hoodie",
@@ -419,6 +472,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 14,
+                            AverageRating = 0.0,
                             CategoryId = 2,
                             Description = "Denim, slim fit",
                             Name = "Jeans",
@@ -428,6 +482,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 15,
+                            AverageRating = 0.0,
                             CategoryId = 5,
                             Description = "Lightweight, breathable mesh",
                             Name = "Running Shoes",
@@ -437,6 +492,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 16,
+                            AverageRating = 0.0,
                             CategoryId = 4,
                             Description = "Wooden, seats six",
                             Name = "Dining Table",
@@ -446,6 +502,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 17,
+                            AverageRating = 0.0,
                             CategoryId = 4,
                             Description = "5-tier wooden rack",
                             Name = "Bookshelf",
@@ -455,6 +512,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 18,
+                            AverageRating = 0.0,
                             CategoryId = 4,
                             Description = "3-seater, fabric upholstery",
                             Name = "Sofa",
@@ -464,6 +522,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 19,
+                            AverageRating = 0.0,
                             CategoryId = 5,
                             Description = "Non-slip, 6mm thick",
                             Name = "Yoga Mat",
@@ -473,6 +532,7 @@ namespace ECommerce.Infrastructure.Migrations
                         new
                         {
                             Id = 20,
+                            AverageRating = 0.0,
                             CategoryId = 5,
                             Description = "FIFA quality certified",
                             Name = "Football",
@@ -710,6 +770,25 @@ namespace ECommerce.Infrastructure.Migrations
                     b.Navigation("RefreshTokens");
                 });
 
+            modelBuilder.Entity("ECommerce.Domain.Entities.Feedback", b =>
+                {
+                    b.HasOne("ECommerce.Domain.Entities.ApplicationUser", "ApplicationUser")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ECommerce.Domain.Entities.Product", "Product")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("ECommerce.Domain.Entities.OrderAggregate.Order", b =>
                 {
                     b.HasOne("ECommerce.Domain.Entities.ApplicationUser", "ApplicationUser")
@@ -897,6 +976,11 @@ namespace ECommerce.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ECommerce.Domain.Entities.ApplicationUser", b =>
+                {
+                    b.Navigation("Feedbacks");
+                });
+
             modelBuilder.Entity("ECommerce.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Products");
@@ -913,6 +997,11 @@ namespace ECommerce.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Entities.Product", b =>
+                {
+                    b.Navigation("Feedbacks");
                 });
 
             modelBuilder.Entity("ECommerce.Domain.Entities.ShoppingCart", b =>
