@@ -13,7 +13,7 @@ namespace ECommerce.Domain.Entities.OrderAggregate
         public DeliveryMethod DeliveryMethod { get; set; }
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
         public PaymentMethod PaymentMethod { get; set; } = PaymentMethod.NotSpecified;
-        public DateTimeOffset OrderDate { get; set; } = DateTimeOffset.UtcNow;
+        public DateTime OrderDate { get; set; } = DateTime.UtcNow;
         public List<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public string? PaymentIntentId { get; set; }
         public string? ClientSecret { get; set; }

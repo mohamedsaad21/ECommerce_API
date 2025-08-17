@@ -9,5 +9,7 @@
         public int Stock { get; set; }
         public int CategoryId { get; set; }
         public Category Category { get; set; }
+        public double AverageRating { get; set; } = 0;
+        public List<Feedback> Feedbacks { get; set; }
     }
 }

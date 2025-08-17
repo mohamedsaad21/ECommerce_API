@@ -56,19 +56,8 @@ namespace ECommerce.Infrastructure.Persistence.Repository
             }
             return await query.FirstOrDefaultAsync();
         }
-        public async Task CreateAsync(T entity)
-        {
-            await dbSet.AddAsync(entity);
-        }
-
-        public async Task UpdateAsync(T entity)
-        {
-            dbSet.Update(entity);
-        }
-        public async Task RemoveAsync(T entity)
-        {
-            dbSet.Remove(entity);
-        }
-
+        public async Task CreateAsync(T entity) => await dbSet.AddAsync(entity);
+        public async Task UpdateAsync(T entity) => dbSet.Update(entity);
+        public async Task RemoveAsync(T entity) =>  dbSet.Remove(entity);
     }
 }
